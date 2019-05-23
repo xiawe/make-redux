@@ -1,12 +1,59 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import { stat } from "fs";
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const appState = {
+    title: {
+        text: 'React.js 小书',
+        color: 'red',
+    },
+    content: {
+        text: 'React.js 小书内容',
+        color: 'blue'
+    }
+}
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+function stateChanger(state, action) {
+    switch (action.type) {
+        case 'UPDATE_TITLE_TEXT':
+            state.title.text = action.text
+            break
+        case 'UPDATE_TITLE_COLOR':
+            state.title.color = action.color
+            break
+        default:
+            break
+    }
+}
+
+function creatStore(state, stateChanger) {
+    let listeners = []
+    let subscribe = listener => listener.push(listner)
+    const getState = () => state
+    const dispatch = (action) => {
+        stateChanger(state, action)
+        listeners.forEach(listener => listener())
+    }
+    return {getState, dispatch, subscribe}
+}
+
+function renderApp(state) {
+    renderTitle(state.title)
+    renderContent(state.content)
+}
+
+function renderTitle(title) {
+    const titleDOM = document.getElementById('title')
+    titleDOM.innerHTML = title.text
+    titleDOM.style.color = title.color
+}
+
+function renderContent(content) {
+    const contentDOM = document.getElementById('content')
+    contentDOM.innerHTML = content.text
+    contentDOM.style.color = content.color
+}
+
+const store = creatStore(appState, stateChanger)
+store.subscribe(() => renderApp(store.getState()))
+renderApp(store.getState())
+store.dispatch({ type: 'UPDATE_TITLE_TEXT', text: '《React.js 小书》' }) // 修改标题文本
+store.dispatch({ type: 'UPDATE_TITLE_COLOR', color: 'blue' }) // 修改标题颜色
